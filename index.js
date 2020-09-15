@@ -157,10 +157,6 @@ bot.hears(/\/answer\s*([^\n\r]*)/, (ctx) => {
                 telegram.sendMessage(player.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
             }
         })
-        while (currentRoom.gotItRight.indexOf((currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)) >= 0){
-            currentRoom.currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
-        }
-        gameRooms[players[ctx.from.id].roomIndex].currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
         if (ctx.match[1] == currentPlayer.identity && currentRoom.gotItRight.indexOf(players[ctx.from.id].playerIndex) < 0){
             ctx.reply("Resposta certa! Parabéns!")
             gameRooms[players[ctx.from.id].roomIndex].gotItRight.push(players[ctx.from.id].playerIndex)
@@ -169,6 +165,11 @@ bot.hears(/\/answer\s*([^\n\r]*)/, (ctx) => {
                 gameRooms[players[ctx.from.id].roomIndex].hasEnded = true
                 ctx.reply("Todos acertaram! Parabéns! Use /new para criar um novo jogo.")
             }
+        } else {
+            while (currentRoom.gotItRight.indexOf((currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)) >= 0){
+                currentRoom.currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
+            }
+            gameRooms[players[ctx.from.id].roomIndex].currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
         }
     }
 })
