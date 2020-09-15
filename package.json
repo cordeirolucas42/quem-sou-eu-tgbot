@@ -1,0 +1,23 @@
+{
+  "name": "quem-sou-eu-tgbot",
+  "version": "1.0.0",
+  "description": "bot de telegram para jogar quem sou eu",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cordeirolucas42/quem-sou-eu-tgbot.git"
+  },
+  "author": "Lucas Cordeiro",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cordeirolucas42/quem-sou-eu-tgbot/issues"
+  },
+  "homepage": "https://github.com/cordeirolucas42/quem-sou-eu-tgbot#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "telegraf": "^3.38.0"
+  }
+}
