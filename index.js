@@ -3,6 +3,7 @@ const Telegram = require('telegraf/telegram')
 var EnvVar = require('dotenv')
 EnvVar.config();
 
+
 const bot = new Telegraf(process.env.BOT_TOKEN)
 const telegram = new Telegram(process.env.BOT_TOKEN)
 
