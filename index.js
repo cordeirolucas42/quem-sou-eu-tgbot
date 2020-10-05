@@ -63,6 +63,7 @@ bot.command("new", (ctx) => {
     players[ctx.from.id].playerIndex = 0
     players[ctx.from.id].matchIndex = 1
     players[ctx.from.id].VIP = true
+    players[ctx.from.id].notes = ""
     // ctx.reply(ctx.from.username)
     ctx.reply(ctx.from.first_name + " criou um novo jogo. Entre no jogo com /join " + newID)
 })
@@ -83,6 +84,7 @@ bot.hears(/\/join\s*([^\n\r]*)/, (ctx) => {
             gameRooms[players[ctx.from.id].roomIndex].players.push({id:ctx.from.id,username:ctx.from.username,name:ctx.from.first_name,identity:""})
             players[ctx.from.id].matchIndex = players[ctx.from.id].playerIndex + 1
             players[ctx.from.id].VIP = false
+            players[ctx.from.id].notes = ""
             telegram.sendMessage(groupID, playerName + " se juntou ao jogo.")
 
             // var currentRoom = gameRooms[players[ctx.from.id].roomIndex]
@@ -125,17 +127,6 @@ bot.command("status", (ctx) => {
     })
     if (players[ctx.from.id]){
         ctx.reply(players[ctx.from.id])
-    }
-})
-
-bot.hears(/\/n\s*([^\n\r]*)/, (ctx) => {
-    console.log(ctx.match) //debugging
-    if (players[ctx.from.id]){
-        if (ctx.match[1]){
-            players[ctx.from.id].notes += "\n" + ctx.match[1]
-        } else {
-            ctx.reply(players[ctx.from.id].notes)
-        }        
     }
 })
 
@@ -183,6 +174,17 @@ bot.hears(/\/answer\s*([^\n\r]*)/, (ctx) => {
             }
             gameRooms[players[ctx.from.id].roomIndex].currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
         }
+    }
+})
+
+bot.hears(/\/n\s*([^\n\r]*)/, (ctx) => {
+    ctx.reply(ctx.match) //debugging
+    if (players[ctx.from.id]){
+        if (ctx.match[1]){
+            players[ctx.from.id].notes += "\n" + ctx.match[1]
+        } else {
+            ctx.reply(players[ctx.from.id].notes)
+        }        
     }
 })
 
