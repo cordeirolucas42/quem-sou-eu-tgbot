@@ -38,6 +38,7 @@ class PlayerSession {
         this.playerIndex = 0
         this.matchIndex = 0
         this.VIP = false
+        this.notes = ""
     }
 }
 
@@ -49,7 +50,7 @@ bot.start((ctx) => {
 
 bot.command("new", (ctx) => {
     // var playerSession = players[ctx.from.id]
-    ctx.reply(ctx.chat.id)
+    // ctx.reply(ctx.chat.id)
     groupID = ctx.chat.id
     if (players[ctx.from.id] === undefined){
         players[ctx.from.id] = new PlayerSession(ctx.from.id)
@@ -58,12 +59,12 @@ bot.command("new", (ctx) => {
     players[ctx.from.id].roomIndex = gameRooms.length
     var newID = MakeID(4)
     gameRooms.push(new GameRoom(newID))
-    gameRooms[players[ctx.from.id].roomIndex].players.push({id:ctx.from.id,name:ctx.from.first_name,identity:""})
+    gameRooms[players[ctx.from.id].roomIndex].players.push({id:ctx.from.id,username:ctx.from.username,name:ctx.from.first_name,identity:""})
     players[ctx.from.id].playerIndex = 0
     players[ctx.from.id].matchIndex = 1
     players[ctx.from.id].VIP = true
     // ctx.reply(ctx.from.username)
-    ctx.reply(ctx.from.username + " criou um novo jogo. Entre no jogo com /join " + newID)
+    ctx.reply(ctx.from.first_name + " criou um novo jogo. Entre no jogo com /join " + newID)
 })
 
 bot.hears(/\/join\s*([^\n\r]*)/, (ctx) => {
@@ -79,7 +80,7 @@ bot.hears(/\/join\s*([^\n\r]*)/, (ctx) => {
             }
             players[ctx.from.id].roomIndex = index
             players[ctx.from.id].playerIndex = gameRooms[players[ctx.from.id].roomIndex].players.length
-            gameRooms[players[ctx.from.id].roomIndex].players.push({id:ctx.from.id,name:ctx.from.first_name,identity:""})
+            gameRooms[players[ctx.from.id].roomIndex].players.push({id:ctx.from.id,username:ctx.from.username,name:ctx.from.first_name,identity:""})
             players[ctx.from.id].matchIndex = players[ctx.from.id].playerIndex + 1
             players[ctx.from.id].VIP = false
             telegram.sendMessage(groupID, playerName + " se juntou ao jogo.")
@@ -127,17 +128,28 @@ bot.command("status", (ctx) => {
     }
 })
 
+bot.hears(/\/n\s*([^\n\r]*)/, (ctx) => {
+    console.log(ctx.match) //debugging
+    if (players[ctx.from.id]){
+        if (ctx.match[1]){
+            players[ctx.from.id].notes += "\n" + ctx.match[1]
+        } else {
+            ctx.reply(players[ctx.from.id].notes)
+        }        
+    }
+})
+
 bot.command("next", (ctx) => {
     if (players[ctx.from.id]){
         var currentRoom = gameRooms[players[ctx.from.id].roomIndex]
-        telegram.sendMessage(groupID, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ".")
-        currentRoom.players.forEach((player,index,array) => {
-            if (index === currentRoom.currentTurn){
-                telegram.sendMessage(player.id, "É sua vez! Você pode tentar uma resposta com '/answer resposta' ou '/next' para passar a vez")
-            } else {
-                telegram.sendMessage(player.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
-            }
-        })
+        telegram.sendMessage(groupID, "@" + currentRoom.players[currentRoom.currentTurn].username + ", é a sua vez!")
+        // currentRoom.players.forEach((player,index,array) => {
+        //     if (index === currentRoom.currentTurn){
+        //         telegram.sendMessage(player.id, "É sua vez! Você pode tentar uma resposta com '/answer resposta' ou '/next' para passar a vez")
+        //     } else {
+        //         telegram.sendMessage(player.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
+        //     }
+        // })
         while (currentRoom.gotItRight.indexOf((currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)) >= 0){
             currentRoom.currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
         }
@@ -149,14 +161,14 @@ bot.hears(/\/answer\s*([^\n\r]*)/, (ctx) => {
     if (players[ctx.from.id]){
         var currentRoom = gameRooms[players[ctx.from.id].roomIndex]
         var currentPlayer = currentRoom.players[players[ctx.from.id].playerIndex]
-        telegram.sendMessage(groupID, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ".")
-        currentRoom.players.forEach((player,index,array) => {
-            if (index === currentRoom.currentTurn){
-                telegram.sendMessage(player.id, "É sua vez! Você pode tentar uma resposta com '/answer resposta' ou /next para passar a vez")
-            } else {
-                telegram.sendMessage(player.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
-            }
-        })
+        telegram.sendMessage(groupID, "@" + currentRoom.players[currentRoom.currentTurn].username + ", é a sua vez!")
+        // currentRoom.players.forEach((player,index,array) => {
+        //     if (index === currentRoom.currentTurn){
+        //         telegram.sendMessage(player.id, "É sua vez! Você pode tentar uma resposta com '/answer resposta' ou /next para passar a vez")
+        //     } else {
+        //         telegram.sendMessage(player.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
+        //     }
+        // })
         if (ctx.match[1] == currentPlayer.identity && currentRoom.gotItRight.indexOf(players[ctx.from.id].playerIndex) < 0){
             ctx.reply("Resposta certa! Parabéns!")
             gameRooms[players[ctx.from.id].roomIndex].gotItRight.push(players[ctx.from.id].playerIndex)
@@ -191,16 +203,18 @@ bot.hears(/.+/, (ctx) => {
                 var currentRoom = gameRooms[players[ctx.from.id].roomIndex]
                 gameRooms[players[ctx.from.id].roomIndex].assigning = false
                 telegram.sendMessage(groupID, "Todos escolheram as identidades secretas!")
-                // currentRoom.players.forEach((player,index,array) => {
-                //     telegram.sendMessage(player.id, "Todos escolheram as identidades secretas!")
-                // })
-                telegram.sendMessage(groupID, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ".")
-                currentRoom.players.forEach((player,index,array) => {
-                    if (index === currentRoom.currentTurn){
-                        telegram.sendMessage(player.id, "É sua vez! Você pode tentar uma resposta com '/answer resposta' ou /next para passar a vez")
-                    } else {
-                        telegram.sendMessage(player.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
-                    }
+                telegram.sendMessage(groupID, "@" + currentRoom.players[currentRoom.currentTurn].username + ", é a sua vez!")
+                currentRoom.players.forEach((sendTo,sendIndex,array) => {
+                    // if (index === currentRoom.currentTurn){
+                    //     telegram.sendMessage(sendTo.id, "É sua vez! Você pode tentar uma resposta com '/answer resposta' ou /next para passar a vez")
+                    // } else {
+                    //     telegram.sendMessage(sendTo.id, "É a vez de " + currentRoom.players[currentRoom.currentTurn].name + ", lembre-se que a identidade secreta é: " + currentRoom.players[currentRoom.currentTurn].identity)
+                    // }
+                    currentRoom.players.forEach((player,index,array) => {
+                        if (player !== sendTo){
+                            telegram.sendMessage(sendTo.id, "A identidade secreta de " + currentRoom.players[index].name + " é: " + currentRoom.players[index].identity)
+                        }
+                    })
                 })
                 gameRooms[players[ctx.from.id].roomIndex].currentTurn = (currentRoom.currentTurn === currentRoom.players.length - 1) ? 0 : (currentRoom.currentTurn + 1)
             }
