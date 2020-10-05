@@ -62,8 +62,8 @@ bot.command("new", (ctx) => {
     players[ctx.from.id].playerIndex = 0
     players[ctx.from.id].matchIndex = 1
     players[ctx.from.id].VIP = true
-    ctx.reply(players[ctx.from])
-    ctx.reply(ctx.from.first_name + " criou um novo jogo. Entre no jogo com /join " + newID)
+    // ctx.reply(ctx.from.username)
+    ctx.reply(ctx.from.username + " criou um novo jogo. Entre no jogo com /join " + newID)
 })
 
 bot.hears(/\/join\s*([^\n\r]*)/, (ctx) => {
