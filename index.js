@@ -178,7 +178,7 @@ bot.hears(/\/answer\s*([^\n\r]*)/, (ctx) => {
 })
 
 bot.hears(/\/n\s*([^\n\r]*)/, (ctx) => {
-    ctx.reply(ctx.match) //debugging
+    // ctx.reply(ctx.match) //debugging
     if (players[ctx.from.id]){
         if (ctx.match[1]){
             players[ctx.from.id].notes += "\n" + ctx.match[1]
